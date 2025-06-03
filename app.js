@@ -35,8 +35,23 @@ app.use('/api/carts', cartsRouter);
 app.use('/', viewsRouter);
 
 // WebSocket
+import ProductManager from './managers/ProductManager.js';
+const productManager = new ProductManager();
+
 io.on('connection', socket => {
   console.log('Cliente conectado por Socket.io');
+
+  socket.on('nuevoProducto', async (data) => {
+    await productManager.addProduct(data);
+    const result = await productManager.getProducts({});
+    io.emit('productosActualizados', result);
+  });
+
+  socket.on('eliminarProducto', async (id) => {
+    await productManager.deleteProduct(id);
+    const result = await productManager.getProducts({});
+    io.emit('productosActualizados', result);
+  });
 });
 
 const PORT = 8080;

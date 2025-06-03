@@ -1,4 +1,5 @@
 import { Product } from '../dao/models/Product.js';
+import mongoose from 'mongoose';
 
 export default class ProductManager {
   async getProducts({ limit = 10, page = 1, sort, query }) {
@@ -19,7 +20,17 @@ export default class ProductManager {
   }
 
   async getProductById(id) {
-    return await Product.findById(id).lean();
+    // Validar si el id es un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error('ID inválido');
+    }
+
+    const product = await Product.findById(id).lean();
+    if (!product) {
+      throw new Error('Producto no encontrado');
+    }
+
+    return product;
   }
 
   async addProduct(product) {
@@ -27,10 +38,30 @@ export default class ProductManager {
   }
 
   async updateProduct(id, updates) {
-    return await Product.findByIdAndUpdate(id, updates, { new: true });
+    // Validar si el id es un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error('ID inválido');
+    }
+
+    const product = await Product.findByIdAndUpdate(id, updates, { new: true, lean: true });
+    if (!product) {
+      throw new Error('Producto no encontrado');
+    }
+
+    return product;
   }
 
   async deleteProduct(id) {
-    return await Product.findByIdAndDelete(id);
+    // Validar si el id es un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error('ID inválido');
+    }
+
+    const product = await Product.findByIdAndDelete(id, { lean: true });
+    if (!product) {
+      throw new Error('Producto no encontrado');
+    }
+
+    return product;
   }
 }
